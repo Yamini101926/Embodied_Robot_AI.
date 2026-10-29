@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Robot Behavior Simulator</title>
+
+  <style>
+    :root {
+      --page: #f3f6f9;
+      --surface: #ffffff;
+      --text: #172b4d;
+      --muted: #526579;
+      --border: #d7e0e8;
+      --accent: #176b70;
+      --accent-hover: #10565a;
+      --soft: #edf4f5;
+    }
+
+    body {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      font: 16px Arial, sans-serif;
+      color: var(--text);
+      background: var(--page);
+    }
+
+    h1, h2 {
+      color: var(--text);
+    }
+
+    section {
+      margin: 16px 0;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(23, 43, 77, 0.06);
+    }
+
+    label {
+      display: block;
+      margin: 18px 0;
+    }
+
+    select,
+    input[type="range"] {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    select {
+      padding: 10px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    button {
+      padding: 10px 14px;
+      color: white;
+      background: var(--accent);
+      border: 0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 3px solid #8bc5c5;
+      outline-offset: 2px;
+    }
+
+    #result {
+      padding: 12px;
+      color: var(--text);
+      background: var(--soft);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    #robot-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+      margin: 16px 0;
+      overflow: hidden;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    #robot {
+      font-size: 64px;
+      transition: transform 0.6s ease;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 16px auto;
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Robot Behavior Simulator</h1>
+  <p>Enter what the robot senses, then see what it decides to do.</p>
+
+  <section>
+    <label>
+      <input id="human" type="checkbox">
+      Human detected
+    </label>
+
+    <label for="obstacle">
+      Obstacle direction
+      <select id="obstacle">
+        <option value="none">No obstacle</option>
+        <option value="front">In front</option>
+        <option value="left">On the left</option>
+        <option value="right">On the right</option>
+      </select>
+    </label>
+
+    <label for="battery">
+      Battery: <span id="batteryValue">85</span>%
+      <input id="battery" type="range" min="0" max="100" value="85">
+    </label>
+
+    <button type="button" onclick="simulate()">Run simulation</button>
+  </section>
+
+  <section>
+    <h2>Robot's action</h2>
+
+    <div id="robot-area">
+      <span id="robot" aria-label="Robot">🤖</span>
+    </div>
+
+    <p id="result" aria-live="polite">
+      Choose the sensor readings and run the simulation.
+    </p>
+  </section>
+
+  <script>
+    const battery = document.getElementById("battery");
+    const batteryValue = document.getElementById("batteryValue");
+    const robot = document.getElementById("robot");
+    const result = document.getElementById("result");
+
+    battery.addEventListener("input", function () {
+      batteryValue.textContent = battery.value;
+    });
+
+    function simulate() {
+      const humanDetected = document.getElementById("human").checked;
+      const obstacle = document.getElementById("obstacle").value;
+      const batteryLevel = Number(battery.value);
+
+      // Reset the robot before showing its next action.
+      robot.textContent = "🤖";
+      robot.style.transform = "translate(0, 0) rotate(0deg)";
+
+      if (humanDetected) {
+        result.textContent =
+          "STOP: A human is detected. The robot waits until the path is clear.";
+        robot.textContent = "🛑🤖";
+      } else if (batteryLevel <= 20) {
+        result.textContent =
+          "RECHARGE: Battery is low. The robot stops and needs to recharge.";
+        robot.textContent = "🔋🤖";
+      } else if (obstacle === "front") {
+        result.textContent =
+          "TURN LEFT: There is an obstacle ahead. The robot turns left.";
+        robot.textContent = "🤖⬅️";
+        robot.style.transform = "translateX(-35px) rotate(-15deg)";
+      } else if (obstacle === "left") {
+        result.textContent =
+          "TURN RIGHT: There is an obstacle on the left. The robot turns right.";
+        robot.textContent = "🤖➡️";
+        robot.style.transform = "translateX(35px) rotate(15deg)";
+      } else if (obstacle === "right") {
+        result.textContent =
+          "TURN LEFT: There is an obstacle on the right. The robot turns left.";
+        robot.textContent = "🤖⬅️";
+        robot.style.transform = "translateX(-35px) rotate(-15deg)";
+      } else {
+        result.textContent =
+          "MOVE FORWARD: The path is clear. The robot moves forward.";
+        robot.textContent = "🤖⬆️";
+        robot.style.transform = "translateY(-25px)";
+      }
+    }
+  </script>
+</body>
+</html>
